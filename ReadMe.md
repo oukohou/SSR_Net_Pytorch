@@ -25,5 +25,8 @@ utilizing Tanh as activation function.
 <br>
 
 #### another small note:
-my reading understanding of [SSRNet]((https://www.ijcai.org/proceedings/2018/0150.pdf)) can be found on my [blog site](https://www.oukohou.wang/) here:[论文阅读-年龄估计_SSRNet](https://www.oukohou.wang/2019/09/20/SSRNet/) ,or on [zhihu](https://www.zhihu.com/) here: [论文阅读-年龄估计_SSRNet](https://zhuanlan.zhihu.com/p/87692466).
+my reading understanding of [SSRNet]((https://www.ijcai.org/proceedings/2018/0150.pdf)) can be found:
+ - on my [blog site](https://www.oukohou.wang/) here:[论文阅读-年龄估计_SSRNet](https://www.oukohou.wang/2019/09/20/SSRNet/) 
+ - or on [zhihu](https://www.zhihu.com/) here: [论文阅读-年龄估计_SSRNet](https://zhuanlan.zhihu.com/p/87692466).  
+
 which was written in Chinese. 
