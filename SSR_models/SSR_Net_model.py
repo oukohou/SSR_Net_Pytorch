@@ -410,8 +410,6 @@ def demo_test():
         y = net(x)
     cost_time = time.time() - a_time
     print("time costs:{} s, average_time:{} s\n".format(cost_time, cost_time / test_numbers_))
-    # print(y.size())
-    # print(y)
     for time_sum_ in time_list_:
         print(1000 * time_sum_ / test_numbers_, end=' ms\n')
     print("\ntotol: {} ms".format(sum(time_list_)))

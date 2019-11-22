@@ -15,10 +15,9 @@ train SSR-Net.
 
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+# os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 import time
 import copy
-import pandas as pd
 import torch
 import torch.optim as optim
 from torch.utils.data import DataLoader
@@ -28,8 +27,6 @@ from datasets.read_imdb_data import IMDBDatasets
 from datasets.read_megaasian_data import MegaAgeAsianDatasets
 from datasets.read_face_age_data import FaceAgeDatasets
 from SSR_models.SSR_Net_model import SSRNet
-from SSR_models.ssrnet_hans import ssrnet_hans
-from torch.utils.tensorboard import SummaryWriter
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -59,8 +56,6 @@ def train_model(model_, dataloaders_, criterion_, optimizer_, num_epochs_=25, te
             running_loss = 0.0
             running_corrects_3 = 0
             running_corrects_5 = 0
-            # groud_truth = []
-            # predictions = []
             for i, (inputs, labels) in enumerate(dataloaders_[phase]):
                 inputs = inputs.to(device)
                 labels = labels.to(device).float()
@@ -72,8 +67,6 @@ def train_model(model_, dataloaders_, criterion_, optimizer_, num_epochs_=25, te
                 with torch.set_grad_enabled(phase == 'train'):
                     outputs = model_(inputs)
                     loss = criterion_(outputs, labels)
-                    # import ipdb
-                    # ipdb.set_trace()
                     
                     if phase == 'train':
                         loss.backward()
@@ -83,23 +76,10 @@ def train_model(model_, dataloaders_, criterion_, optimizer_, num_epochs_=25, te
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects_3 += torch.sum(torch.abs(outputs - labels) < 3)  # CA 3
                 running_corrects_5 += torch.sum(torch.abs(outputs - labels) < 5)  # CA 5
-            #     #  to analyse results.
-            #     groud_truth = groud_truth + labels.tolist()
-            #     predictions = predictions + outputs.tolist()
-            # results = pd.DataFrame()
-            # results['groud'] = groud_truth
-            # results['preds'] = predictions
-            # results.to_csv('/home/data/CVAR-B/study/projects/face_properties/age_estimation/codes/results.csv', index=False)
             
             epoch_loss = running_loss / len(dataloaders_[phase].dataset)
             CA_3 = running_corrects_3.double() / len(dataloaders_[phase].dataset)
             CA_5 = running_corrects_5.double() / len(dataloaders_[phase].dataset)
-            
-            # add running loss to tensorboard.
-            if tensorboard_writer:
-                tensorboard_writer.add_scalars('losses',
-                                               {'{} loss'.format(phase): epoch_loss},
-                                               epoch + 1)
             
             # print("inputs:{}".format(inputs))
             # print("outputs:{}".format(outputs))
@@ -117,8 +97,6 @@ def train_model(model_, dataloaders_, criterion_, optimizer_, num_epochs_=25, te
                 val_acc_history.append(CA_3)
         
         lr_scheduler.step(epoch)
-        if tensorboard_writer:
-            tensorboard_writer.add_graph(model_, inputs)
     
     time_elapsed = time.time() - since
     print('Training complete in {:.0f}m {:.0f}s'.format(time_elapsed // 60, time_elapsed % 60))
@@ -130,8 +108,7 @@ def train_model(model_, dataloaders_, criterion_, optimizer_, num_epochs_=25, te
 
 
 if __name__ == "__main__":
-    # train_data_base_path = '/home/data/CVAR-B/study/projects/face_properties/age_estimation/datasets/IMDB/filtered_imdb_crop/resized_64'
-    train_data_base_path = '/home/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/train'
+    train_data_base_path = '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/train'
     # batch_size = 1248
     batch_size = 50
     input_size = 64
@@ -141,16 +118,11 @@ if __name__ == "__main__":
     augment = False
     load_pretrained = True
     
-    tensorboard_writer = SummaryWriter(
-        '/home/CVAR-B/study/projects/face_properties/age_estimation/trained_models/SSR_Net_MegaAge_Asian/logdir/L1Loss_epoch{}_lr{}_batch{}'.format(
-            num_epochs, learning_rate, batch_size
-        ))
     
     model_to_train = SSRNet(image_size=input_size)
-    # model_to_train = ssrnet(stage_num=[3, 3, 3], lambda_local=1., lambda_d=1., age=101)
     if load_pretrained:
         loaded_model = torch.load(
-            '/home/data/CVAR-B/study/projects/face_properties/age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_L1Loss_LRDecay_weightDecay0.0001_batch50_lr0.0015_epoch90+90_64x64.pth'
+            '../age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_L1Loss_LRDecay_weightDecay0.0001_batch50_lr0.0015_epoch90+90_64x64.pth'
         )
         model_to_train.load_state_dict(loaded_model['state_dict'])
     
@@ -176,9 +148,9 @@ if __name__ == "__main__":
     
     # for MegaAgeAsian datasets:
     total_image_path = open(
-        '/home/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/train_name.txt').readlines()
+        '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/train_name.txt').readlines()
     total_age_label = open(
-        '/home/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/train_age.txt').readlines()
+        '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/train_age.txt').readlines()
     random.seed(2019)
     random.shuffle(total_image_path)
     random.seed(2019)
@@ -197,7 +169,7 @@ if __name__ == "__main__":
                                    )
     
     # # for face age Datasets
-    # all_files = pd.read_csv("/home/data/CVAR-B/study/projects/face_properties/age_estimation/datasets/face_age_train.csv")
+    # all_files = pd.read_csv("../age_estimation/datasets/face_age_train.csv")
     # all_files = all_files.sample(frac=1.)
     # all_files = all_files[:4000]  # get a small part for fast convergence.
     # train_data_list, val_data_list = train_test_split(all_files, test_size=0.2, random_state=2019)
@@ -209,18 +181,18 @@ if __name__ == "__main__":
     val_loader = DataLoader(val_gen, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=0)
     
     test_image_path = open(
-        '/home/data/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/test_name.txt').readlines()
+        '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/test_name.txt').readlines()
     test_age_label = open(
-        '/home/data/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/test_age.txt').readlines()
-    test_data_base_path = '/home/data/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/test'
+        '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/test_age.txt').readlines()
+    test_data_base_path = '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/test'
     test_gen = MegaAgeAsianDatasets(test_image_path, test_age_label, test_data_base_path, mode="train",
                                     augment=augment,
                                     )
     test_loader = DataLoader(test_gen, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=0)
     
     total_dataloader = {
-        # 'train': train_loader,
-        # 'val': val_loader,
+        'train': train_loader,
+        'val': val_loader,
         'test': test_loader,
     }
     
@@ -239,10 +211,10 @@ if __name__ == "__main__":
                                        num_epochs_=num_epochs,
                                        )
     
-    # torch.save({
-    #     'epoch': num_epochs,
-    #     'state_dict': model_to_train.state_dict(),
-    #     'optimizer_state_dict': optimizer_ft.state_dict(),
-    # },
-    #     '/home/CVAR-B/study/projects/face_properties/age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_L1Loss_LRDecay_weightDecay{}_batch{}_lr{}_epoch{}+90_64x64.pth'.format(
-    #         weight_decay, batch_size, learning_rate, num_epochs))
+    torch.save({
+        'epoch': num_epochs,
+        'state_dict': model_to_train.state_dict(),
+        'optimizer_state_dict': optimizer_ft.state_dict(),
+    },
+        '../age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_L1Loss_LRDecay_weightDecay{}_batch{}_lr{}_epoch{}+90_64x64.pth'.format(
+            weight_decay, batch_size, learning_rate, num_epochs))
