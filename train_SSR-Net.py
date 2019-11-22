@@ -59,7 +59,8 @@ def train_model(model_, dataloaders_, criterion_, optimizer_, num_epochs_=25, te
             running_loss = 0.0
             running_corrects_3 = 0
             running_corrects_5 = 0
-            
+            # groud_truth = []
+            # predictions = []
             for i, (inputs, labels) in enumerate(dataloaders_[phase]):
                 inputs = inputs.to(device)
                 labels = labels.to(device).float()
@@ -82,6 +83,13 @@ def train_model(model_, dataloaders_, criterion_, optimizer_, num_epochs_=25, te
                 running_loss += loss.item() * inputs.size(0)
                 running_corrects_3 += torch.sum(torch.abs(outputs - labels) < 3)  # CA 3
                 running_corrects_5 += torch.sum(torch.abs(outputs - labels) < 5)  # CA 5
+            #     #  to analyse results.
+            #     groud_truth = groud_truth + labels.tolist()
+            #     predictions = predictions + outputs.tolist()
+            # results = pd.DataFrame()
+            # results['groud'] = groud_truth
+            # results['preds'] = predictions
+            # results.to_csv('/home/data/CVAR-B/study/projects/face_properties/age_estimation/codes/results.csv', index=False)
             
             epoch_loss = running_loss / len(dataloaders_[phase].dataset)
             CA_3 = running_corrects_3.double() / len(dataloaders_[phase].dataset)
@@ -126,7 +134,7 @@ if __name__ == "__main__":
     train_data_base_path = '/home/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/train'
     # batch_size = 1248
     batch_size = 50
-    input_size = 50
+    input_size = 64
     num_epochs = 90
     learning_rate = 0.0015  # originally 0.001
     weight_decay = 1e-4  # originally 1e-4
@@ -142,7 +150,7 @@ if __name__ == "__main__":
     # model_to_train = ssrnet(stage_num=[3, 3, 3], lambda_local=1., lambda_d=1., age=101)
     if load_pretrained:
         loaded_model = torch.load(
-            '/home/data/CVAR-B/study/projects/face_properties/age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_MSELoss_LRDecay_weightDecay0.0001_batch50_lr0.0005_epoch90_64x64.pth'
+            '/home/data/CVAR-B/study/projects/face_properties/age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_L1Loss_LRDecay_weightDecay0.0001_batch50_lr0.0015_epoch90+90_64x64.pth'
         )
         model_to_train.load_state_dict(loaded_model['state_dict'])
     
@@ -211,8 +219,8 @@ if __name__ == "__main__":
     test_loader = DataLoader(test_gen, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=0)
     
     total_dataloader = {
-        'train': train_loader,
-        'val': val_loader,
+        # 'train': train_loader,
+        # 'val': val_loader,
         'test': test_loader,
     }
     
@@ -231,10 +239,10 @@ if __name__ == "__main__":
                                        num_epochs_=num_epochs,
                                        )
     
-    torch.save({
-        'epoch': num_epochs,
-        'state_dict': model_to_train.state_dict(),
-        'optimizer_state_dict': optimizer_ft.state_dict(),
-    },
-        '/home/CVAR-B/study/projects/face_properties/age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_L1Loss_LRDecay_weightDecay{}_batch{}_lr{}_epoch{}+90_64x64.pth'.format(
-            weight_decay, batch_size, learning_rate, num_epochs))
+    # torch.save({
+    #     'epoch': num_epochs,
+    #     'state_dict': model_to_train.state_dict(),
+    #     'optimizer_state_dict': optimizer_ft.state_dict(),
+    # },
+    #     '/home/CVAR-B/study/projects/face_properties/age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_L1Loss_LRDecay_weightDecay{}_batch{}_lr{}_epoch{}+90_64x64.pth'.format(
+    #         weight_decay, batch_size, learning_rate, num_epochs))
