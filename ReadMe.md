@@ -8,9 +8,9 @@ the official keras version is here: [SSR-Net](https://github.com/shamangary/SSR-
 ## results on [MegaAge_Asian](http://mmlab.ie.cuhk.edu.hk/projects/MegaAge/) datasets:  
 |-|train|valid|test|
 |:---:|:---:|:---:|:---:
-|my implementation_v1^[1]|train Loss: 22.0870 CA_3: 0.5108, CA_5: 0.7329|val Loss: 44.7439 CA_3: 0.4268, CA_5: 0.6225|test Loss: 35.6759 CA_3: 0.4935, CA_5: 0.6902
+|version_v1^[1]|train Loss: 22.0870 CA_3: 0.5108, CA_5: 0.7329|val Loss: 44.7439 CA_3: 0.4268, CA_5: 0.6225|test Loss: 35.6759 CA_3: 0.4935, CA_5: 0.6902
 |original paper|**|**|CA_3: 0.549, CA_5: 0.741|
-|my implementation_v2^[2]|train Loss: 2.9401 CA_3: 0.6326, CA_5: 0.8123|val Loss: 4.7221 CA_3: 0.4438, CA_5: 0.6295|test Loss: 3.9311 CA_3: 0.5151, CA_5: 0.7163
+|version_v2^[2]|train Loss: 2.9401 CA_3: 0.6326, CA_5: 0.8123|val Loss: 4.7221 CA_3: 0.4438, CA_5: 0.6295|test Loss: 3.9311 CA_3: 0.5151, CA_5: 0.7163
 
 [^1]: train from scratch, use MSEloss;  
 [^2]: use pretrianed my implementation_v1, use L1Loss.
@@ -22,3 +22,8 @@ otherwise the model will very likely always output 0, me myself suspects this is
 utilizing Tanh as activation function.  
 - And also: Batchsize [could severely affect the results](https://github.com/shamangary/SSR-Net/issues/38).   
 
+<br>
+
+#### another small note:
+my reading understanding of [SSRNet]((https://www.ijcai.org/proceedings/2018/0150.pdf)) can be found on my [blog site](https://www.oukohou.wang/) here:[论文阅读-年龄估计_SSRNet](https://www.oukohou.wang/2019/09/20/SSRNet/) ,or on [zhihu](https://www.zhihu.com/) here: [论文阅读-年龄估计_SSRNet](https://zhuanlan.zhihu.com/p/87692466).
+which was written in Chinese. 

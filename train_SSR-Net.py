@@ -15,7 +15,7 @@ train SSR-Net.
 
 import os
 
-os.environ["CUDA_VISIBLE_DEVICES"] = '1'
+# os.environ["CUDA_VISIBLE_DEVICES"] = '1'
 import time
 import copy
 import pandas as pd
@@ -28,7 +28,6 @@ from datasets.read_imdb_data import IMDBDatasets
 from datasets.read_megaasian_data import MegaAgeAsianDatasets
 from datasets.read_face_age_data import FaceAgeDatasets
 from SSR_models.SSR_Net_model import SSRNet
-from SSR_models.ssrnet_hans import ssrnet_hans
 from torch.utils.tensorboard import SummaryWriter
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -122,9 +121,7 @@ def train_model(model_, dataloaders_, criterion_, optimizer_, num_epochs_=25, te
 
 
 if __name__ == "__main__":
-    # train_data_base_path = '/home/data/CVAR-B/study/projects/face_properties/age_estimation/datasets/IMDB/filtered_imdb_crop/resized_64'
-    train_data_base_path = '/home/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/train'
-    # batch_size = 1248
+    train_data_base_path = '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/train'
     batch_size = 50
     input_size = 50
     num_epochs = 90
@@ -133,16 +130,11 @@ if __name__ == "__main__":
     augment = False
     load_pretrained = True
     
-    tensorboard_writer = SummaryWriter(
-        '/home/CVAR-B/study/projects/face_properties/age_estimation/trained_models/SSR_Net_MegaAge_Asian/logdir/L1Loss_epoch{}_lr{}_batch{}'.format(
-            num_epochs, learning_rate, batch_size
-        ))
-    
     model_to_train = SSRNet(image_size=input_size)
     # model_to_train = ssrnet(stage_num=[3, 3, 3], lambda_local=1., lambda_d=1., age=101)
     if load_pretrained:
         loaded_model = torch.load(
-            '/home/data/CVAR-B/study/projects/face_properties/age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_MSELoss_LRDecay_weightDecay0.0001_batch50_lr0.0005_epoch90_64x64.pth'
+            '../age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_MSELoss_LRDecay_weightDecay0.0001_batch50_lr0.0005_epoch90_64x64.pth'
         )
         model_to_train.load_state_dict(loaded_model['state_dict'])
     
@@ -168,9 +160,9 @@ if __name__ == "__main__":
     
     # for MegaAgeAsian datasets:
     total_image_path = open(
-        '/home/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/train_name.txt').readlines()
+        '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/train_name.txt').readlines()
     total_age_label = open(
-        '/home/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/train_age.txt').readlines()
+        '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/train_age.txt').readlines()
     random.seed(2019)
     random.shuffle(total_image_path)
     random.seed(2019)
@@ -189,7 +181,7 @@ if __name__ == "__main__":
                                    )
     
     # # for face age Datasets
-    # all_files = pd.read_csv("/home/data/CVAR-B/study/projects/face_properties/age_estimation/datasets/face_age_train.csv")
+    # all_files = pd.read_csv("../age_estimation/datasets/face_age_train.csv")
     # all_files = all_files.sample(frac=1.)
     # all_files = all_files[:4000]  # get a small part for fast convergence.
     # train_data_list, val_data_list = train_test_split(all_files, test_size=0.2, random_state=2019)
@@ -201,10 +193,10 @@ if __name__ == "__main__":
     val_loader = DataLoader(val_gen, batch_size=batch_size, shuffle=False, pin_memory=True, num_workers=0)
     
     test_image_path = open(
-        '/home/data/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/test_name.txt').readlines()
+        '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/test_name.txt').readlines()
     test_age_label = open(
-        '/home/data/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/test_age.txt').readlines()
-    test_data_base_path = '/home/data/CVAR-B/study/projects/face_properties/age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/test'
+        '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/list/test_age.txt').readlines()
+    test_data_base_path = '../age_estimation/datasets/megaage_asion/megaage_asian/megaage_asian/test'
     test_gen = MegaAgeAsianDatasets(test_image_path, test_age_label, test_data_base_path, mode="train",
                                     augment=augment,
                                     )
@@ -236,5 +228,5 @@ if __name__ == "__main__":
         'state_dict': model_to_train.state_dict(),
         'optimizer_state_dict': optimizer_ft.state_dict(),
     },
-        '/home/CVAR-B/study/projects/face_properties/age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_L1Loss_LRDecay_weightDecay{}_batch{}_lr{}_epoch{}+90_64x64.pth'.format(
+        '../age_estimation/trained_models/SSR_Net_MegaAge_Asian/model_Adam_L1Loss_LRDecay_weightDecay{}_batch{}_lr{}_epoch{}+90_64x64.pth'.format(
             weight_decay, batch_size, learning_rate, num_epochs))

@@ -44,7 +44,6 @@ class MegaAgeAsianDatasets(Dataset):
         
         image_ = T.Compose([
             T.ToPILImage(),
-            # T.RandomResizedCrop(self.input_size),
             T.Resize((self.input_size, self.input_size)),
             T.RandomHorizontalFlip(),
             T.ToTensor(),

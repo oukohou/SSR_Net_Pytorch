@@ -16,7 +16,6 @@ SSR-Net in Pytorch.
 import torch
 from torch import nn
 from torch.nn import init
-import torch.nn.functional as F
 
 
 class SSRNet(nn.Module):
@@ -232,8 +231,7 @@ class SSRNet(nn.Module):
         embedding_stream2_stage3_before_PB = feature_stream2_stage3_before_PB.view(feature_stream2_stage3_before_PB.size(0), -1)
         embedding_stream2_stage2_before_PB = feature_stream2_stage2_before_PB.view(feature_stream2_stage2_before_PB.size(0), -1)
         embedding_stream2_stage1_before_PB = feature_stream2_stage1_before_PB.view(feature_stream2_stage1_before_PB.size(0), -1)
-        # import ipdb
-        # ipdb.set_trace()
+        
         stage1_delta_k = self.stage1_delta_k(torch.mul(embedding_stream1_stage1_before_PB, embedding_stream2_stage1_before_PB))
         stage2_delta_k = self.stage2_delta_k(torch.mul(embedding_stream1_stage2_before_PB, embedding_stream2_stage2_before_PB))
         stage3_delta_k = self.stage3_delta_k(torch.mul(embedding_stream1_stage3_before_PB, embedding_stream2_stage3_before_PB))
@@ -261,34 +259,23 @@ class SSRNet(nn.Module):
         stage1_regress = prob_stage_1[:, 0] * 0
         stage2_regress = prob_stage_2[:, 0] * 0
         stage3_regress = prob_stage_3[:, 0] * 0
-        # import ipdb
         for index in range(self.stage_num[0]):
             stage1_regress = stage1_regress + (index + self.lambda_index * index_offset_stage1[:, index]) * prob_stage_1[:, index]
-        # ipdb.set_trace()
         stage1_regress = torch.unsqueeze(stage1_regress, 1)
         stage1_regress = stage1_regress / (self.stage_num[0] * (1 + self.lambda_delta * stage1_delta_k))
-        # stage1_regress = stage1_regress / (self.stage_num[0] * (1 + self.lambda_delta * torch.squeeze(stage1_delta_k, 1)))
         
         for index in range(self.stage_num[1]):
             stage2_regress = stage2_regress + (index + self.lambda_index * index_offset_stage2[:, index]) * prob_stage_2[:, index]
         stage2_regress = torch.unsqueeze(stage2_regress, 1)
         stage2_regress = stage2_regress / (self.stage_num[0] * (1 + self.lambda_delta * stage1_delta_k) *
                                         (self.stage_num[1] * (1 + self.lambda_delta * stage2_delta_k)))
-        # stage2_regress = stage2_regress / ((self.stage_num[0] * (1 + self.lambda_delta * torch.squeeze(stage1_delta_k, 1))) *
-        #                                    (self.stage_num[1] * (1 + self.lambda_delta * torch.squeeze(stage2_delta_k, 1))))
-        
         for index in range(self.stage_num[2]):
             stage3_regress = stage3_regress + (index + self.lambda_index * index_offset_stage3[:, index]) * prob_stage_3[:, index]
         stage3_regress = torch.unsqueeze(stage3_regress, 1)
         stage3_regress = stage3_regress / (self.stage_num[0] * (1 + self.lambda_delta * stage1_delta_k) *
                                            (self.stage_num[1] * (1 + self.lambda_delta * stage2_delta_k)) *
                                            (self.stage_num[2] * (1 + self.lambda_delta * stage3_delta_k))
-        # stage3_regress = stage3_regress / ((self.stage_num[0] * (1 + self.lambda_delta * torch.squeeze(stage1_delta_k, 1))) *
-        #                                    (self.stage_num[1] * (1 + self.lambda_delta * torch.squeeze(stage2_delta_k, 1))) *
-        #                                    (self.stage_num[2] * (1 + self.lambda_delta * torch.squeeze(stage3_delta_k, 1)))
                                            )
-        # import ipdb
-        # ipdb.set_trace()
         regress_class = (stage1_regress + stage2_regress + stage3_regress) * self.class_range
         regress_class = torch.squeeze(regress_class, 1)
         return regress_class
