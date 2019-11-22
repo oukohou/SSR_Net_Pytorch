@@ -31,7 +31,7 @@ from SSR_models.SSR_Net_model import SSRNet
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 
-def train_model(model_, dataloaders_, criterion_, optimizer_, num_epochs_=25, tensorboard_writer=None):
+def train_model(model_, dataloaders_, criterion_, optimizer_, num_epochs_=25):
     global lr_scheduler
     
     since = time.time()

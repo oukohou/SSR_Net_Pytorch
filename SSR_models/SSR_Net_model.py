@@ -16,10 +16,6 @@ SSR-Net in Pytorch.
 import torch
 from torch import nn
 from torch.nn import init
-import torch.nn.functional as F
-import time
-
-time_list_ = [0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]
 
 
 class SSRNet(nn.Module):
@@ -213,31 +209,18 @@ class SSRNet(nn.Module):
                     init.constant_(m.bias, 0)
     
     def forward(self, image_):
-        # current_time_ = time.time()
         feature_stream1_stage3 = self.stream1_stage3(image_)
-        # time_list_[0] = time_list_[0] + (time.time() - current_time_)
         
-        # current_time_ = time.time()
         feature_stream1_stage2 = self.stream1_stage2(feature_stream1_stage3)
-        # time_list_[1] = time_list_[1] + (time.time() - current_time_)
         
-        # current_time_ = time.time()
         feature_stream1_stage1 = self.stream1_stage1(feature_stream1_stage2)
-        # time_list_[2] = time_list_[2] + (time.time() - current_time_)
         
-        # current_time_ = time.time()
         feature_stream2_stage3 = self.stream2_stage3(image_)
-        # time_list_[3] = time_list_[3] + (time.time() - current_time_)
         
-        # current_time_ = time.time()
         feature_stream2_stage2 = self.stream2_stage2(feature_stream2_stage3)
-        # time_list_[4] = time_list_[4] + (time.time() - current_time_)
         
-        # current_time_ = time.time()
         feature_stream2_stage1 = self.stream2_stage1(feature_stream2_stage2)
-        # time_list_[5] = time_list_[5] + (time.time() - current_time_)
         
-        # current_time_ = time.time()
         feature_stream1_stage3_before_PB = self.funsion_block_stream1_stage_3_before_PB(feature_stream1_stage3)
         feature_stream1_stage2_before_PB = self.funsion_block_stream1_stage_2_before_PB(feature_stream1_stage2)
         feature_stream1_stage1_before_PB = self.funsion_block_stream1_stage_1_before_PB(feature_stream1_stage1)
@@ -245,9 +228,7 @@ class SSRNet(nn.Module):
         feature_stream2_stage3_before_PB = self.funsion_block_stream2_stage_3_before_PB(feature_stream2_stage3)
         feature_stream2_stage2_before_PB = self.funsion_block_stream2_stage_2_before_PB(feature_stream2_stage2)
         feature_stream2_stage1_before_PB = self.funsion_block_stream2_stage_1_before_PB(feature_stream2_stage1)
-        # time_list_[6] = time_list_[6] + (time.time() - current_time_)
         
-        # current_time_ = time.time()
         embedding_stream1_stage3_before_PB = feature_stream1_stage3_before_PB.view(feature_stream1_stage3_before_PB.size(0), -1)
         embedding_stream1_stage2_before_PB = feature_stream1_stage2_before_PB.view(feature_stream1_stage2_before_PB.size(0), -1)
         embedding_stream1_stage1_before_PB = feature_stream1_stage1_before_PB.view(feature_stream1_stage1_before_PB.size(0), -1)
@@ -255,10 +236,6 @@ class SSRNet(nn.Module):
         embedding_stream2_stage3_before_PB = feature_stream2_stage3_before_PB.view(feature_stream2_stage3_before_PB.size(0), -1)
         embedding_stream2_stage2_before_PB = feature_stream2_stage2_before_PB.view(feature_stream2_stage2_before_PB.size(0), -1)
         embedding_stream2_stage1_before_PB = feature_stream2_stage1_before_PB.view(feature_stream2_stage1_before_PB.size(0), -1)
-        # time_list_[7] = time_list_[7] + (time.time() - current_time_)
-        # import ipdb
-        # ipdb.set_trace()
-        # current_time_ = time.time()
         stage1_delta_k = self.stage1_delta_k(torch.mul(embedding_stream1_stage1_before_PB, embedding_stream2_stage1_before_PB))
         stage2_delta_k = self.stage2_delta_k(torch.mul(embedding_stream1_stage2_before_PB, embedding_stream2_stage2_before_PB))
         stage3_delta_k = self.stage3_delta_k(torch.mul(embedding_stream1_stage3_before_PB, embedding_stream2_stage3_before_PB))
@@ -273,9 +250,7 @@ class SSRNet(nn.Module):
         embedding_stage1_after_PB = self.stage1_FC_after_PB(embedding_stage1_after_PB)
         embedding_stage2_after_PB = self.stage2_FC_after_PB(embedding_stage2_after_PB)
         embedding_stage3_after_PB = self.stage3_FC_after_PB(embedding_stage3_after_PB)
-        # time_list_[8] = time_list_[8] + (time.time() - current_time_)
         
-        # current_time_ = time.time()
         prob_stage_1 = self.stage1_prob(embedding_stage1_after_PB)
         index_offset_stage1 = self.stage1_index_offsets(embedding_stage1_after_PB)
         
@@ -284,27 +259,19 @@ class SSRNet(nn.Module):
         
         prob_stage_3 = self.stage3_prob(embedding_stage3_after_PB)
         index_offset_stage3 = self.stage3_index_offsets(embedding_stage3_after_PB)
-        # time_list_[9] = time_list_[9] + (time.time() - current_time_)
-        
-        # current_time_ = time.time()
         stage1_regress = prob_stage_1[:, 0] * 0
         stage2_regress = prob_stage_2[:, 0] * 0
         stage3_regress = prob_stage_3[:, 0] * 0
-        # import ipdb
         for index in range(self.stage_num[0]):
             stage1_regress = stage1_regress + (index + self.lambda_index * index_offset_stage1[:, index]) * prob_stage_1[:, index]
-        # ipdb.set_trace()
         stage1_regress = torch.unsqueeze(stage1_regress, 1)
         stage1_regress = stage1_regress / (self.stage_num[0] * (1 + self.lambda_delta * stage1_delta_k))
-        # stage1_regress = stage1_regress / (self.stage_num[0] * (1 + self.lambda_delta * torch.squeeze(stage1_delta_k, 1)))
         
         for index in range(self.stage_num[1]):
             stage2_regress = stage2_regress + (index + self.lambda_index * index_offset_stage2[:, index]) * prob_stage_2[:, index]
         stage2_regress = torch.unsqueeze(stage2_regress, 1)
         stage2_regress = stage2_regress / (self.stage_num[0] * (1 + self.lambda_delta * stage1_delta_k) *
                                            (self.stage_num[1] * (1 + self.lambda_delta * stage2_delta_k)))
-        # stage2_regress = stage2_regress / ((self.stage_num[0] * (1 + self.lambda_delta * torch.squeeze(stage1_delta_k, 1))) *
-        #                                    (self.stage_num[1] * (1 + self.lambda_delta * torch.squeeze(stage2_delta_k, 1))))
         
         for index in range(self.stage_num[2]):
             stage3_regress = stage3_regress + (index + self.lambda_index * index_offset_stage3[:, index]) * prob_stage_3[:, index]
@@ -312,95 +279,15 @@ class SSRNet(nn.Module):
         stage3_regress = stage3_regress / (self.stage_num[0] * (1 + self.lambda_delta * stage1_delta_k) *
                                            (self.stage_num[1] * (1 + self.lambda_delta * stage2_delta_k)) *
                                            (self.stage_num[2] * (1 + self.lambda_delta * stage3_delta_k))
-                                           # stage3_regress = stage3_regress / ((self.stage_num[0] * (1 + self.lambda_delta * torch.squeeze(stage1_delta_k, 1))) *
-                                           #                                    (self.stage_num[1] * (1 + self.lambda_delta * torch.squeeze(stage2_delta_k, 1))) *
-                                           #                                    (self.stage_num[2] * (1 + self.lambda_delta * torch.squeeze(stage3_delta_k, 1)))
                                            )
-        # import ipdb
-        # ipdb.set_trace()
         regress_class = (stage1_regress + stage2_regress + stage3_regress) * self.class_range
         regress_class = torch.squeeze(regress_class, 1)
-        # time_list_[10] = time_list_[10] + (time.time() - current_time_)
         return regress_class
-
-
-class TrialSSRNet(nn.Module):
-    def __init__(self, stage_num=[3, 3, 3], image_size=64,
-                 class_range=101, lambda_index=1., lambda_delta=1.):
-        super(TrialSSRNet, self).__init__()
-        self.image_size = image_size
-        self.stage_num = stage_num
-        self.lambda_index = lambda_index
-        self.lambda_delta = lambda_delta
-        self.class_range = class_range
-        
-        self.stream1_stage3 = nn.Sequential(
-            nn.Conv2d(3, 32, 3, 1, 1),
-            nn.BatchNorm2d(32),
-            nn.ReLU(),
-            nn.AvgPool2d(2, 2)
-        )
-        self.stream1_stage3_former = nn.Sequential(
-            nn.Conv2d(3, 32, 3, 1, 1),
-            nn.BatchNorm2d(32),
-            nn.ReLU(),
-            # nn.AvgPool2d(2, 2)
-        )
-        self.stream1_stage3_latter = nn.Sequential(
-            # nn.Conv2d(3, 32, 3, 1, 1),
-            # nn.BatchNorm2d(32),
-            # nn.ReLU(),
-            nn.AvgPool2d(2, 2)
-        )
-        
-        self.stream2_stage3 = nn.Sequential(
-            nn.Conv2d(3, 16, 3, 1, 1),
-            nn.BatchNorm2d(16),
-            nn.Tanh(),
-            nn.MaxPool2d(2, 2)
-        )
-        
-        self.stream2_stage3_former = nn.Sequential(
-            nn.Conv2d(3, 16, 3, 1, 1),
-            nn.BatchNorm2d(16),
-            nn.Tanh(),
-            # nn.MaxPool2d(2, 2)
-        )
-        self.stream2_stage3_latter = nn.Sequential(
-            # nn.Tanh(),
-            nn.MaxPool2d(2, 2)
-        )
-    
-    def forward(self, image_):
-        current_time_ = time.time()
-        feature_stream1_stage3 = self.stream1_stage3(image_)
-        time_list_[0] = time_list_[0] + (time.time() - current_time_)
-        
-        current_time_ = time.time()
-        feature_stream1_stage3 = self.stream1_stage3_former(image_)
-        time_list_[1] = time_list_[1] + (time.time() - current_time_)
-        
-        current_time_ = time.time()
-        feature_stream1_stage3 = self.stream1_stage3_latter(feature_stream1_stage3)
-        time_list_[2] = time_list_[2] + (time.time() - current_time_)
-        
-        current_time_ = time.time()
-        feature_stream1_stage3 = self.stream2_stage3(image_)
-        time_list_[3] = time_list_[3] + (time.time() - current_time_)
-        
-        current_time_ = time.time()
-        feature_stream1_stage3 = self.stream2_stage3_former(image_)
-        time_list_[4] = time_list_[4] + (time.time() - current_time_)
-        
-        current_time_ = time.time()
-        feature_stream1_stage3 = self.stream2_stage3_latter(feature_stream1_stage3)
-        time_list_[5] = time_list_[5] + (time.time() - current_time_)
 
 
 def demo_test():
     import time
     net = SSRNet()
-    # net = TrialSSRNet()
     net = net.cuda('cuda')
     net.eval()
     x = torch.randn(1, 3, 64, 64).cuda('cuda')
@@ -410,9 +297,6 @@ def demo_test():
         y = net(x)
     cost_time = time.time() - a_time
     print("time costs:{} s, average_time:{} s\n".format(cost_time, cost_time / test_numbers_))
-    for time_sum_ in time_list_:
-        print(1000 * time_sum_ / test_numbers_, end=' ms\n')
-    print("\ntotol: {} ms".format(sum(time_list_)))
 
 
 if __name__ == "__main__":
