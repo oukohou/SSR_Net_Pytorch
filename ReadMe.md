@@ -20,8 +20,26 @@ the official keras version is here: [SSR-Net](https://github.com/shamangary/SSR-
 - This SSR-Net model can't fit big learning rate, learning rate should be smaller than 0.002.
 otherwise the model will very likely always output 0, me myself suspects this is because of the 
 utilizing Tanh as activation function.  
-- And also: Batchsize [could severely affect the results](https://github.com/shamangary/SSR-Net/issues/38).   
-
+- And also: Batchsize [could severely affect the results](https://github.com/shamangary/SSR-Net/issues/38). A set of tested params can be :
+    ```text
+    batch_size = 50
+    input_size = 64
+    num_epochs = 90
+    learning_rate = 0.001 # originally 0.001
+    weight_decay = 1e-4 # originally 1e-4
+    augment = False
+    optimizer_ft = optim.Adam(params_to_update, lr=learning_rate, weight_decay=weight_decay)
+    criterion = nn.L1Loss()
+    lr_scheduler = optim.lr_scheduler.StepLR(optimizer_ft, step_size=30, gamma=0.1)
+    ```   
+- The dataset preprocess is quite easy. For MegaAsian datasets, you can use the `./datasets/read_megaasina_data.py` directly;
+for other datasets, just generate a pandas csv file in format like:
+    ```text
+    filename,age
+    1.jpg,23
+    ...
+    ```
+is OK. But also, remember to change the `./datasets/read_imdb_data.py` accordingly.
 <br>
 
 #### another small note:
