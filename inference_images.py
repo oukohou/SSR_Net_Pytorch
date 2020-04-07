@@ -40,7 +40,7 @@ def inference_single_image(model_, image_path_, input_size_=64):
         T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])(image_)
     
     image_ = image_[np.newaxis, ]
-    image_ = image_.cuda()
+    image_ = image_.to(device)
     results_ = model_(image_)
     return results_,  time.time() - start_time_
 
