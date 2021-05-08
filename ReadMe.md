@@ -42,6 +42,9 @@ for other datasets, just generate a pandas csv file in format like:
 is OK. But also, remember to change the `./datasets/read_imdb_data.py` accordingly.
 <br>
 
+### onnxruntime C++ implementation  
+thanks to [DefTruth](https://github.com/DefTruth) 's implementation here: [How to convert SSRNet to ONNX and implements with onnxruntime c++](https://github.com/DefTruth/litehub/blob/main/docs/ort/ort_ssrnet-cn.md).    
+
 #### another small note:
 my reading understanding of [SSRNet]((https://www.ijcai.org/proceedings/2018/0150.pdf)) can be found:
  - on my [blog site](https://www.oukohou.wang/) here:[论文阅读-年龄估计_SSRNet](https://www.oukohou.wang/2019/09/20/SSRNet/) 
